@@ -40,7 +40,8 @@ router.get("/api", async (req, res) => {
 
 app.use("/restapi/v1", router);
 
-app.use((err, req, req, next) => {
+// Fixed duplicate parameter issue here
+app.use((err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.message = err.message || 'Internal Server Error';
     res.status(err.statusCode).json({

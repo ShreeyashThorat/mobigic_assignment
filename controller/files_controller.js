@@ -1,5 +1,6 @@
 import { statusCodes, statusJson } from "../helper/status_codes.js";
-import { encryptFile, encryptText, decryptText } from "../helper/files_helper.js";
+import { encryptText, decryptText } from "../helper/files_helper.js";
+import { encryptFile } from "../helper/file_encryption.js";
 import { db, dbRelease } from "../database.js";
 import s3 from "../aws_configuration.js";
 import logger from "../logger/logger.js";
@@ -45,7 +46,7 @@ const UploadFile = async (req, res) => {
         }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }
@@ -66,7 +67,7 @@ const GetFiles = async (req, res) => {
         return res.status(statusCodes.OK).json(statusJson.ok({ message: "File deleted get successfully", data: fileData }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }
@@ -96,7 +97,7 @@ const DeleteFile = async (req, res) => {
         return res.status(statusCodes.OK).json(statusJson.ok({ message: "File deleted successfully" }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }

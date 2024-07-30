@@ -26,7 +26,7 @@ const CreateUser = async (req, res) => {
         }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }
@@ -55,7 +55,7 @@ const SignInUser = async (req, res) => {
         return res.status(statusCodes.OK).json(statusJson.ok({message: "User logged in successfully", data: { ...userData[0], token } }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }

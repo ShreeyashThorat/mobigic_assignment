@@ -30,7 +30,7 @@ const UploadFile = async (req, res) => {
 
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
-
+        const decryptedPass = decryptText(encryptedPassword);
         const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name, media_pass) VALUES(?, ?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname, encryptedPassword])
         res.status(statusCodes.CREATED).json(statusJson.created({
             message: "File uploaded successfully", data: {
@@ -39,7 +39,8 @@ const UploadFile = async (req, res) => {
                 "media_url": fileUrl,
                 "media_key": key,
                 "file_name": file.originalname,
-                file
+                "media_pass": decryptedPass,
+                password
             }
         }));
     } catch (e) {

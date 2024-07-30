@@ -2,10 +2,10 @@ import crypto from 'crypto';
 
 
 const algorithm = 'aes-256-cbc';
-const ivLength = 16; // For AES, this is always 16
+const ivLength = 16;
 
 function generateKey(password) {
-    return crypto.scryptSync(password, 'salt', 32); // Generate a 32-byte key from the password
+    return crypto.scryptSync(password, 'salt', 32);
 }
 
 function encryptFile(buffer, password) {

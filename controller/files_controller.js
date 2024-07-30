@@ -1,9 +1,14 @@
 import { statusCodes, statusJson } from "../helper/status_codes.js";
-import { encryptText, decryptText } from "../helper/files_helper.js";
-import { encryptFile } from "../helper/file_encryption.js";
 import { db, dbRelease } from "../database.js";
 import s3 from "../aws_configuration.js";
 import logger from "../logger/logger.js";
+import path from 'path';
+import crypto from 'crypto';
+import fs from 'fs';
+
+const generateUniqueCode = () => {
+    return crypto.randomBytes(3).toString('hex').toUpperCase();
+};
 
 const UploadFile = async (req, res) => {
     try {
@@ -17,22 +22,19 @@ const UploadFile = async (req, res) => {
         if (userData.length === 0) {
             return res.status(statusCodes.NOT_FOUND).json(statusJson.notFound({ message: "User not found" }));
         }
-
-        const password = Math.floor(100000 + Math.random() * 900000).toString();
-        const encryptedFileBuffer = encryptFile(file.buffer, password);
-        const encryptedPassword = encryptText(password)
-        const key = `${userid}_${Date.now()}_${file.originalname}`;
+        const uniqueCode = generateUniqueCode();
+        const key = `${uniqueCode}-${file.originalname}`;
         const params = {
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: key,
-            Body: encryptedFileBuffer,
+            Body: fs.createReadStream(file.path),
             ContentType: file.mimetype
         };
 
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
         const decryptedPass = decryptText(encryptedPassword);
-        const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name, media_pass) VALUES(?, ?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname, encryptedPassword])
+        const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name, media_pass) VALUES(?, ?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname, "encryptedPassword"])
         res.status(statusCodes.CREATED).json(statusJson.created({
             message: "File uploaded successfully", data: {
                 "media_id": insert[0]?.insertId,
@@ -40,8 +42,6 @@ const UploadFile = async (req, res) => {
                 "media_url": fileUrl,
                 "media_key": key,
                 "file_name": file.originalname,
-                "media_pass": decryptedPass,
-                password
             }
         }));
     } catch (e) {

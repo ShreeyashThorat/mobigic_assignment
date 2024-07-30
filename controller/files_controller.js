@@ -2,13 +2,6 @@ import { statusCodes, statusJson } from "../helper/status_codes.js";
 import { db, dbRelease } from "../database.js";
 import s3 from "../aws_configuration.js";
 import logger from "../logger/logger.js";
-import path from 'path';
-import crypto from 'crypto';
-import fs from 'fs';
-
-const generateUniqueCode = () => {
-    return crypto.randomBytes(3).toString('hex').toUpperCase();
-};
 
 const UploadFile = async (req, res) => {
     try {
@@ -22,31 +15,30 @@ const UploadFile = async (req, res) => {
         if (userData.length === 0) {
             return res.status(statusCodes.NOT_FOUND).json(statusJson.notFound({ message: "User not found" }));
         }
-        const uniqueCode = generateUniqueCode();
-        const key = `${uniqueCode}-${file.originalname}`;
+        const key = `${userid}_${Date.now()}_${file.originalname}`;
         const params = {
             Bucket: process.env.AWS_BUCKET_NAME,
             Key: key,
-            Body: fs.createReadStream(file.path),
+            Body: file.buffer,
             ContentType: file.mimetype
         };
 
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
-        const decryptedPass = decryptText(encryptedPassword);
-        const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name, media_pass) VALUES(?, ?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname, "encryptedPassword"])
+
+        const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name) VALUES(?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname])
         res.status(statusCodes.CREATED).json(statusJson.created({
             message: "File uploaded successfully", data: {
                 "media_id": insert[0]?.insertId,
                 "content": content,
                 "media_url": fileUrl,
                 "media_key": key,
-                "file_name": file.originalname,
+                "file_name": file.originalname
             }
         }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }
@@ -67,7 +59,7 @@ const GetFiles = async (req, res) => {
         return res.status(statusCodes.OK).json(statusJson.ok({ message: "File deleted get successfully", data: fileData }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }
@@ -97,7 +89,7 @@ const DeleteFile = async (req, res) => {
         return res.status(statusCodes.OK).json(statusJson.ok({ message: "File deleted successfully" }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);
-        return res.status(statusCodes.INTERNAL_SERVER_ERROR).json(statusJson.internalServerError({ error: e }));
+        return res.status(statusCodes.OK).json(statusJson.internalServerError({ error: e }));
     } finally {
         dbRelease();
     }

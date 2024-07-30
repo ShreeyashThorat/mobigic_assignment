@@ -2,6 +2,7 @@ import { statusCodes, statusJson } from "../helper/status_codes.js";
 import { db, dbRelease } from "../database.js";
 import s3 from "../aws_configuration.js";
 import logger from "../logger/logger.js";
+import { encryptText, decryptText } from "../helper/files_helper.js";
 
 const UploadFile = async (req, res) => {
     try {
@@ -26,9 +27,9 @@ const UploadFile = async (req, res) => {
 
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
-        console.log(file.password);
-
-        const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name) VALUES(?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname])
+        const password = Math.floor(100000 + Math.random() * 900000).toString();
+        const encryptedPassword = encryptText(password)
+        const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name, media_pass) VALUES(?, ?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname, encryptedPassword])
         res.status(statusCodes.CREATED).json(statusJson.created({
             message: "File uploaded successfully", data: {
                 "media_id": insert[0]?.insertId,
@@ -36,7 +37,7 @@ const UploadFile = async (req, res) => {
                 "media_url": fileUrl,
                 "media_key": key,
                 "file_name": file.originalname,
-                "password": file.password
+                "media_pass": password
             }
         }));
     } catch (e) {
@@ -58,7 +59,9 @@ const GetFiles = async (req, res) => {
         if (fileData.length === 0) {
             return res.status(statusCodes.NOT_FOUND).json(statusJson.notFound({ message: "File Data not found" }));
         }
-
+        fileData.forEach((item) => {
+            item.media_pass = decryptText(item.media_pass);
+        });
         return res.status(statusCodes.OK).json(statusJson.ok({ message: "File deleted get successfully", data: fileData }));
     } catch (e) {
         logger.error(`Got an error while create user: ${e}`);

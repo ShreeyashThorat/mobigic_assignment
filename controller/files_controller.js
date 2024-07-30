@@ -23,6 +23,7 @@ const UploadFile = async (req, res) => {
             ContentType: file.mimetype
         };
 
+
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
 
@@ -33,7 +34,8 @@ const UploadFile = async (req, res) => {
                 "content": content,
                 "media_url": fileUrl,
                 "media_key": key,
-                "file_name": file.originalname
+                "file_name": file.originalname,
+                "password": file.password
             }
         }));
     } catch (e) {

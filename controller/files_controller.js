@@ -26,6 +26,7 @@ const UploadFile = async (req, res) => {
 
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
+        console.log(file.password);
 
         const insert = await db.execute(`INSERT INTO media (userid, content, media_url, media_key, file_name) VALUES(?, ?, ?, ?, ?)`, [userid, content ?? null, fileUrl, key, file.originalname])
         res.status(statusCodes.CREATED).json(statusJson.created({

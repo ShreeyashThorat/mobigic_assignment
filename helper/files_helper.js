@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 
 const algorithm = 'aes-256-cbc';
-const secretKey = process.env.SECRET_KEY;
+const secretKey = process.env.File_Encryption_Secret_Key;
 const ivLength = 16;
 
 function encryptText(text) {

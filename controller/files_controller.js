@@ -24,7 +24,6 @@ const UploadFile = async (req, res) => {
             ContentType: file.mimetype
         };
 
-
         const data = await s3.upload(params).promise();
         const fileUrl = data.Location;
         const password = Math.floor(100000 + Math.random() * 900000).toString();
@@ -37,7 +36,8 @@ const UploadFile = async (req, res) => {
                 "media_url": fileUrl,
                 "media_key": key,
                 "file_name": file.originalname,
-                "media_pass": password
+                "media_pass": password,
+                "updated_at": new Date()
             }
         }));
     } catch (e) {

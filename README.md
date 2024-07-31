@@ -32,6 +32,7 @@ This project implements a file upload and management system using Node.js, Expre
 - MySQL
 - Multer (for file uploads)
 - JWT (for authentication)
+- AWS S3 (for store files)
 
 ## Getting Started
 
@@ -41,13 +42,14 @@ Make sure you have the following installed on your system:
 
 - Node.js
 - MySQL
+- AWS S3
 
 ### Installation
 
 1. **Clone the repository:**
     ```bash
-    git clone [GitHub Repository Link for Backend]
-    cd [repository-name]
+    git clone https://github.com/ShreeyashThorat/mobigic_assignment.git
+    cd mobigic_assignment
     ```
 
 2. **Install dependencies:**
@@ -63,18 +65,26 @@ Make sure you have the following installed on your system:
    - Create a `.env` file in the root directory.
    - Add the following environment variables:
      ```
-     DB_HOST=your-database-host
-     DB_USER=your-database-username
-     DB_PASSWORD=your-database-password
-     DB_NAME=your-database-name
-     JWT_SECRET=your-jwt-secret
+     DB_HOST=_DB_HOST__
+     DB_USER=__DB_USER__
+     DB_PASSWORD=__DB_PASS__
+     DB_DATABASE=_DB_NAME__
+     PORT = __PORT__
+
+     JWT_SECRET_KEY = _JWT_SECRET_KEY__
+     JWT_EXP=__JWT_EXPIRY__
+
+     AWS_BUCKET_NAME = _AWS_BUCKET_NAME_
+     AWS_REGION = _AWS_REGION_
+     AWS_SECRET_ACCESS_KEY = _AWS_SECRET_ACCESS_KEY_
+     AWS_ACCESS_KEY_ID = _AWS_ACCESS_KEY_ID_
      ```
 
 ### Running the Server
 
 1. **Start the server:**
     ```bash
-    npm start
+    node index.js
     ```
 
 2. The server should now be running on `http://localhost:3000`.
@@ -83,12 +93,71 @@ Make sure you have the following installed on your system:
 
 ### User Registration
 
-- **Endpoint:** `POST /register`
+- **Endpoint:** `POST /create-user`
 - **Description:** Register a new user.
 - **Request Body:**
   ```json
   {
-    "username": "your-username",
+    "email": "your-email",
+    "firstName": "your-first-name",
+    "lastName": "your-last-name",
+    "dob": "your-dob"
     "password": "your-password"
   }
+
+
+### User Login
+
+- **Endpoint:** `POST /login`
+- **Description:** Login a existing user.
+- **Request Body:**
+  ```json
+  {
+    "email": "your-email",
+    "password": "your-password"
+  }
+
+
+### Upload file
+
+- **Endpoint:** `POST /upload`
+- **Description:** Upload file.
+- **Request Header:**
+  ```json
+  {
+    "Auth token": "Bearer token"
+  }
+- **Request File:**
+  ```json
+  {
+    "file": "your-file"
+  }
+
+### Get files
+
+- **Endpoint:** `GET /my-files`
+- **Description:** Get uploaded files.
+- **Request Body:**
+- **Request Header:**
+  ```json
+  {
+    "Auth token": "Bearer token"
+  }
+
+
+### Remove file
+
+- **Endpoint:** `DELETE /delete-file`
+- **Description:** Delete uploaded file.
+- **Request Header:**
+  ```json
+  {
+    "Auth token": "Bearer token"
+  }
+- **Request Query:**
+  ```json
+  {
+    "media_id": "media_id",
+  }
+
 
